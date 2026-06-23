@@ -89,12 +89,13 @@
   svg.conn{position:absolute;left:0;top:0;pointer-events:none;z-index:0;overflow:visible}
   svg.conn path{fill:none;stroke:var(--conn);stroke-width:2}
   svg.conn path.d{stroke:var(--gold);stroke-dasharray:4 4;opacity:.55}
-  .round{position:relative;z-index:1;display:flex;flex-direction:column;min-width:158px}
+  .round{position:relative;z-index:1;display:flex;flex-direction:column;flex:none}
+  .round:not(.center){width:126px}   /* uniform game-box width across all rounds */
   /* pure space-around (no gap) keeps every match centered exactly on its two feeders;
      the extra bracket height gives the R32 games their breathing room evenly */
   .ties{flex:1;display:flex;flex-direction:column;justify-content:space-around}
-  .round h4{text-align:center;color:var(--onbg);font-size:13px;font-weight:800;text-transform:uppercase;
-     letter-spacing:.08em;width:fit-content;margin:0 auto 10px;padding:0 0 4px;border-bottom:2px solid var(--accent)}
+  .round h4{text-align:center;color:var(--onbg);font-size:12px;font-weight:800;text-transform:uppercase;
+     letter-spacing:.03em;white-space:nowrap;width:fit-content;margin:0 auto 10px;padding:0 0 4px;border-bottom:2px solid var(--accent)}
   .tie{background:#eceef1;border:1px solid var(--line);border-radius:9px;overflow:hidden;font-size:12px;cursor:pointer}
   .tie .row{display:flex;justify-content:space-between;padding:5px 9px}
   .tie .row+.row{border-top:1px solid var(--line)}
