@@ -7,25 +7,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
-    --bg:#0b1020; --panel:#141b30; --panel2:#1b2440; --line:#26304f;
-    --txt:#e7ecf7; --muted:#9aa6c4; --accent:#39d98a; --accent2:#4da3ff;
-    --win:#39d98a; --gold:#ffd166; --conn:#33406b;
-    --grad:linear-gradient(160deg,#070b16,#0b1020 40%,#0d1428);
+    --bg:#d7d7d7; --panel:#ffffff; --panel2:#e3e5e8; --line:#c9ced5;
+    --txt:#1b1e23; --muted:#5b626d; --accent:#0c8c4e; --accent2:#27313c;
+    --win:#0c8c4e; --gold:#a87b07; --conn:#8b9099;
+    --onbg:#1c1f24;  /* text sitting directly on the gray background */
+    --grad:linear-gradient(160deg,#e0e0e0,#d7d7d7 45%,#cdcdcd);
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
        background:var(--grad);color:var(--txt);min-height:100vh}
-  header{padding:20px 18px 10px;display:flex;align-items:center;justify-content:center;gap:26px;flex-wrap:wrap}
+  header{padding:20px 18px 10px;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
   .titleblock{text-align:center}
-  header h1{margin:0;font-size:clamp(28px,5vw,52px);letter-spacing:.5px;font-weight:800}
-  header p{margin:6px 0 0;color:var(--muted);font-size:14px}
+  header h1{margin:0;font-size:clamp(34px,6vw,66px);letter-spacing:.5px;font-weight:800;color:var(--onbg);line-height:1.05}
+  header h1 .sub2{font-size:1em;font-weight:400;letter-spacing:.5px}
+  header p{margin:6px 0 0;color:var(--onbg);opacity:.8;font-size:14px}
   .star{height:172px;width:auto;border-radius:14px;object-fit:cover;
      border:2px solid var(--line);box-shadow:0 6px 20px rgba(0,0,0,.4)}
   @media(max-width:640px){.star{height:110px}}
   .wrap{max-width:1280px;margin:0 auto;padding:14px}
   .trophy{display:block;margin:16px auto 14px;height:120px;width:auto;
      filter:drop-shadow(0 6px 14px rgba(255,209,102,.35))}
-  .status{text-align:center;font-size:12.5px;color:var(--muted);margin:2px 0 6px}
+  .status{text-align:center;font-size:12.5px;color:var(--onbg);margin:2px 0 6px}
   .status.ok{color:var(--accent)}
   .status.warn{color:var(--gold)}
   .ticker{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:2px 0 12px}
@@ -46,11 +48,11 @@
   .livedot.loss{--dot:#ff3b3b}  /* currently losing   */
   @keyframes pulse{0%{box-shadow:0 0 0 0 var(--dot)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
   .ko-controls{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;margin:4px 0 12px}
-  .ko-controls .hint{font-size:12.5px;font-weight:500;color:var(--muted)}
+  .ko-controls .hint{font-size:12.5px;font-weight:500;color:var(--onbg);opacity:.85}
   .ko-controls button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);
      padding:6px 11px;border-radius:8px;cursor:pointer;font-size:12px;transition:.15s}
   .ko-controls button:hover{border-color:var(--accent)}
-  h2.section{text-align:center;margin:30px 0 14px;font-size:20px;color:var(--accent2)}
+  h2.section{text-align:center;margin:30px 0 14px;font-size:20px;color:var(--onbg)}
   .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(352px,1fr));gap:14px}
   .group{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
   .group h3{margin:0;padding:10px 12px;background:var(--panel2);font-size:15px}
@@ -66,7 +68,7 @@
   tr.q2 td{background:rgba(77,163,255,.11)}
   tr.q3 td{background:rgba(255,209,102,.09)}
   .pts{font-weight:800;color:var(--accent)}
-  .group input{width:22px;background:#0a0f1e;border:1px solid var(--line);color:var(--txt);
+  .group input{width:22px;background:#ffffff;border:1px solid var(--line);color:var(--txt);
      border-radius:5px;padding:2px 0;text-align:center;font-size:11px}
   /* identical fixed layout for every group table so columns align across all 12 */
   .group table{table-layout:fixed;width:336px;margin:0 auto}
@@ -80,19 +82,23 @@
   .third{max-width:780px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
   .third tr.in td{background:rgba(57,217,138,.13)}
   .third tr.out td{opacity:.5}
-  .bracket{position:relative;display:flex;gap:34px;height:680px;overflow-x:auto;padding:16px 6px 26px}
+  .bracket{position:relative;display:flex;gap:34px;height:760px;overflow-x:auto;padding:16px 6px 26px}
   svg.conn{position:absolute;left:0;top:0;pointer-events:none;z-index:0;overflow:visible}
   svg.conn path{fill:none;stroke:var(--conn);stroke-width:2}
   svg.conn path.d{stroke:var(--gold);stroke-dasharray:4 4;opacity:.55}
   .round{position:relative;z-index:1;display:flex;flex-direction:column;min-width:158px}
+  /* pure space-around (no gap) keeps every match centered exactly on its two feeders;
+     the extra bracket height gives the R32 games their breathing room evenly */
   .ties{flex:1;display:flex;flex-direction:column;justify-content:space-around}
-  .round h4{text-align:center;color:var(--muted);font-size:12px;text-transform:uppercase;margin:0 0 6px}
-  .tie{background:var(--panel);border:1px solid var(--line);border-radius:9px;overflow:hidden;font-size:12px;cursor:pointer}
+  .round h4{text-align:center;color:var(--onbg);font-size:13px;font-weight:800;text-transform:uppercase;
+     letter-spacing:.08em;width:fit-content;margin:0 auto 10px;padding:0 0 4px;border-bottom:2px solid var(--accent)}
+  .tie{background:#eceef1;border:1px solid var(--line);border-radius:9px;overflow:hidden;font-size:12px;cursor:pointer}
   .tie .row{display:flex;justify-content:space-between;padding:5px 9px}
   .tie .row+.row{border-top:1px solid var(--line)}
   .tie .row.pick{cursor:pointer}
   .tie .row.pick:hover{background:rgba(77,163,255,.15)}
-  .tie .row.adv{color:var(--win);font-weight:700;background:rgba(57,217,138,.10)}
+  .tie .row.adv{color:var(--txt);font-weight:700;background:#ffffff}
+  .tie .row.lost{color:#9aa1ac;font-weight:400;background:#dfe2e6}
   .tie .row.tbd{color:var(--muted);font-style:italic;cursor:default}
   summary.foldable{cursor:pointer;list-style:none;user-select:none}
   summary.foldable::-webkit-details-marker{display:none}
@@ -112,8 +118,8 @@
      color:#23262e;font-weight:700;padding:10px 16px;border-radius:11px;font-size:14px;min-width:150px}
   .bronze img.flag{height:17px;margin:0;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
   #fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999;display:none}
-  .note{color:var(--muted);font-size:12px;text-align:center;max-width:820px;margin:8px auto;line-height:1.5}
-  footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
+  .note{color:var(--onbg);opacity:.85;font-size:12px;text-align:center;max-width:820px;margin:8px auto;line-height:1.5}
+  footer{text-align:center;color:var(--onbg);opacity:.7;font-size:12px;padding:24px}
 </style>
 </head>
 <body>
@@ -122,7 +128,7 @@
        src="mbappe.avif"
        onerror="this.style.display='none'">
   <div class="titleblock">
-    <h1>🏆 World Cup 2026 — Live Games and Bracket Seeding</h1>
+    <h1>World Cup 2026<br><span class="sub2">Live Bracket Seeding</span></h1>
     <p>48 teams · 12 groups · auto-computed bracket · USA · Canada · Mexico</p>
   </div>
   <img class="star" alt="Lionel Messi"
@@ -134,7 +140,6 @@
   <div id="status" class="status">⏳ Loading live standings from ESPN…</div>
   <div id="ticker" class="ticker" style="display:none"></div>
 
-  <h2 class="section" style="color:#ffffff;font-size:24px">Knockout Bracket</h2>
   <div class="ko-controls">
     <span class="hint">👆 Click a team to send it to the next round — click it again to undo · your picks save automatically</span>
     <button id="shareBtn">🔗 Share bracket</button>
@@ -478,7 +483,7 @@ function buildBracket(){
 function tieHTML(t){
   const w=winnerOf(t);
   const row=(team)=> team
-    ? `<div class="row pick ${team===w?'adv':''}" data-tag="${t.tag}" data-team="${encodeURIComponent(team)}"><span class="nm">${flagged(team)}</span></div>`
+    ? `<div class="row pick ${team===w?'adv':(w?'lost':'')}" data-tag="${t.tag}" data-team="${encodeURIComponent(team)}"><span class="nm">${flagged(team)}</span></div>`
     : `<div class="row tbd"><span class="nm">— TBD —</span></div>`;
   return `<div class="tie" data-mtag="${t.tag}">${t.tag?`<div class="mtag">${t.tag}</div>`:''}${row(t.home)}${row(t.away)}</div>`;
 }
