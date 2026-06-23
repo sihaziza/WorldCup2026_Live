@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>World Cup 2026 — Live Games and Bracket Seeding</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --bg:#0b1020; --panel:#141b30; --panel2:#1b2440; --line:#26304f;
@@ -125,7 +126,9 @@
 
   <h2 class="section" style="color:#ffffff;font-size:24px">Knockout Bracket</h2>
   <div class="ko-controls">
-    <span class="hint">👆 Click a team to send it to the next round — click it again to undo</span>
+    <span class="hint">👆 Click a team to send it to the next round — click it again to undo · your picks save automatically</span>
+    <button id="shareBtn">🔗 Share bracket</button>
+    <button id="pngBtn">📷 Save as PNG</button>
     <button id="topBtn">🧹 Clear bracket</button>
   </div>
   <div class="bracket" id="bracket"></div>
@@ -574,9 +577,66 @@ function drawConnectors(){
 }
 window.addEventListener('resize',()=>requestAnimationFrame(drawConnectors));
 
+/* ---------- Share / save a bracket via the URL ---------- */
+const CODE2NAME=(()=>{const m={};for(const g in DEFAULT)DEFAULT[g].forEach(a=>{const c=CODES[clean(a[0])];if(c)m[c]=a[0];});return m;})();
+function encodeBracket(){
+  const out=[];
+  for(const tag in koWinners){const nm=koWinners[tag];if(!nm)continue;
+    const c=CODES[clean(nm)]; if(c) out.push(tag.slice(1)+c);} // e.g. 104br
+  return out.join(',');
+}
+function decodeBracket(s){
+  const ko={};
+  s.split(',').forEach(p=>{const m=p.match(/^(\d+)(.+)$/);if(!m)return;
+    const nm=CODE2NAME[m[2]]; if(nm) ko['M'+m[1]]=nm;});
+  return ko;
+}
+function loadSharedFromURL(){
+  const m=location.hash.match(/[#&]b=([^&]+)/);
+  if(!m)return false;
+  try{ koWinners=decodeBracket(m[1]); save(); return true; }catch(e){ return false; }
+}
+function flash(btn,txt){const o=btn.textContent;btn.textContent=txt;setTimeout(()=>btn.textContent=o,1800);}
+function shareBracket(){
+  const code=encodeBracket();
+  const url=location.origin+location.pathname+(code?'#b='+code:'');
+  const btn=document.getElementById('shareBtn');
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(url).then(()=>flash(btn,'✅ Link copied!')).catch(()=>window.prompt('Copy your bracket link:',url));
+  else window.prompt('Copy your bracket link:',url);
+}
+
+/* ---------- Export the full bracket as a PNG ---------- */
+function exportPng(){
+  const btn=document.getElementById('pngBtn');
+  if(typeof html2canvas!=='function'){flash(btn,'⚠️ Loading… retry');return;}
+  const el=document.getElementById('bracket');
+  flash(btn,'📷 Saving…');
+  const bg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#0b1020';
+  const fullW=el.scrollWidth, fullH=el.scrollHeight;
+  // temporarily expand so the whole horizontal bracket is in-frame (not clipped by overflow-x)
+  const prev={overflow:el.style.overflow,width:el.style.width,maxWidth:el.style.maxWidth};
+  el.style.overflow='visible'; el.style.width=fullW+'px'; el.style.maxWidth='none';
+  drawConnectors();
+  const restore=()=>{el.style.overflow=prev.overflow;el.style.width=prev.width;el.style.maxWidth=prev.maxWidth;drawConnectors();};
+  html2canvas(el,{backgroundColor:bg,useCORS:true,scale:2,
+    width:fullW,height:fullH,windowWidth:fullW,windowHeight:fullH,scrollX:0,scrollY:0,x:0,y:0})
+    .then(canvas=>{restore();canvas.toBlob(b=>{
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(b); a.download='wc2026-bracket.png'; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+    },'image/png');})
+    .catch(()=>{restore();flash(btn,'⚠️ Export failed');});
+}
+
 function renderAll(){renderGroups();renderThird();renderBracket();}
+document.getElementById('shareBtn').onclick=shareBracket;
+document.getElementById('pngBtn').onclick=exportPng;
 document.getElementById('topBtn').onclick=()=>{koWinners={};save();renderBracket();};
-load();renderAll();
+load();
+const sharedLoaded=loadSharedFromURL(); // a shared link overrides the local copy
+renderAll();
+if(sharedLoaded){const st=document.getElementById('status');if(st){st.className='status ok';st.textContent='🔗 Loaded a shared bracket — click teams to make it your own';}}
 fetchStandings();
 setInterval(fetchStandings,60000); // auto-refresh every minute (live scores)
 </script>
