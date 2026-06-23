@@ -51,7 +51,7 @@
      padding:6px 11px;border-radius:8px;cursor:pointer;font-size:12px;transition:.15s}
   .ko-controls button:hover{border-color:var(--accent)}
   h2.section{text-align:center;margin:30px 0 14px;font-size:20px;color:var(--accent2)}
-  .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(352px,1fr));gap:14px}
   .group{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
   .group h3{margin:0;padding:10px 12px;background:var(--panel2);font-size:15px}
   table{width:100%;border-collapse:collapse;font-size:13px}
@@ -66,8 +66,17 @@
   tr.q2 td{background:rgba(77,163,255,.11)}
   tr.q3 td{background:rgba(255,209,102,.09)}
   .pts{font-weight:800;color:var(--accent)}
-  .group input{width:34px;background:#0a0f1e;border:1px solid var(--line);color:var(--txt);
-     border-radius:5px;padding:3px;text-align:center;font-size:12px}
+  .group input{width:22px;background:#0a0f1e;border:1px solid var(--line);color:var(--txt);
+     border-radius:5px;padding:2px 0;text-align:center;font-size:11px}
+  /* identical fixed layout for every group table so columns align across all 12 */
+  .group table{table-layout:fixed;width:336px;margin:0 auto}
+  .group th,.group td{padding:5px 2px}
+  .group th{font-size:9px}
+  .group th:first-child,.group td:first-child{width:128px}        /* team (fits "United States") */
+  .group th:not(:first-child),.group td:not(:first-child){width:26px}
+  .group td.team{padding-left:6px}
+  .group input[data-k="Pts"]{color:var(--accent);font-weight:800} /* points stand out */
+  .group th.ptsh{color:var(--accent);font-weight:800}
   .third{max-width:780px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
   .third tr.in td{background:rgba(57,217,138,.13)}
   .third tr.out td{opacity:.5}
@@ -140,6 +149,7 @@
   <details id="groupsFold" open>
     <summary class="section foldable">Group Standings <span class="caret">▾</span></summary>
     <div class="groups" id="groups"></div>
+    <p class="note legend"><b>P</b> Played · <b>Pts</b> Points · <b>W</b> Won · <b>D</b> Drawn · <b>L</b> Lost · <b>GF</b> Goals For · <b>GA</b> Goals Against · <b>GD</b> Goal Difference</p>
   </details>
 </div>
 
@@ -210,7 +220,7 @@ const FLAGCOLORS={
 function clean(name){return name.replace(/^[\u{1F1E6}-\u{1F1FF}\u{1F3F4}\u{E0060}-\u{E007F}️\s]+/u,'').trim();}
 function flagged(name){
   const n=clean(name),code=CODES[n];
-  const img=code?`<img class="flag" src="https://flagcdn.com/h20/${code}.png" alt="" loading="lazy">`:'';
+  const img=code?`<img class="flag" src="https://flagcdn.com/h60/${code}.png" alt="" loading="lazy">`:'';
   return img+'<span>'+n+'</span>';
 }
 
@@ -343,11 +353,11 @@ function renderGroups(){
       const oc=liveOutcome[clean(t.name)];
       const live=oc?`<span class="livedot ${oc}" title="live: ${oc==='win'?'winning':oc==='loss'?'losing':'drawing'}"></span>`:'';
       return `<tr class="${cls}"><td class="team">${live}${flagged(t.name)}</td>
-        ${stat('P')}${stat('W')}${stat('D')}${stat('L')}${stat('GF')}${stat('GA')}
-        <td>${t.GD>0?'+':''}${t.GD}</td>${stat('Pts')}</tr>`;
+        ${stat('P')}${stat('Pts')}${stat('W')}${stat('D')}${stat('L')}${stat('GF')}${stat('GA')}
+        <td>${t.GD>0?'+':''}${t.GD}</td></tr>`;
     }).join('');
     div.innerHTML=`<h3>Group ${g}</h3>
-      <table><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr></thead>
+      <table><thead><tr><th>Team</th><th>P</th><th class="ptsh">Pts</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead>
       <tbody>${rows}</tbody></table>`;
     el.appendChild(div);
   });
@@ -611,22 +621,37 @@ function exportPng(){
   const btn=document.getElementById('pngBtn');
   if(typeof html2canvas!=='function'){flash(btn,'⚠️ Loading… retry');return;}
   const el=document.getElementById('bracket');
-  flash(btn,'📷 Saving…');
+  const label=btn.textContent; btn.textContent='📷 Saving…'; btn.disabled=true;
   const bg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#0b1020';
   const fullW=el.scrollWidth, fullH=el.scrollHeight;
   // temporarily expand so the whole horizontal bracket is in-frame (not clipped by overflow-x)
   const prev={overflow:el.style.overflow,width:el.style.width,maxWidth:el.style.maxWidth};
   el.style.overflow='visible'; el.style.width=fullW+'px'; el.style.maxWidth='none';
   drawConnectors();
-  const restore=()=>{el.style.overflow=prev.overflow;el.style.width=prev.width;el.style.maxWidth=prev.maxWidth;drawConnectors();};
-  html2canvas(el,{backgroundColor:bg,useCORS:true,scale:2,
-    width:fullW,height:fullH,windowWidth:fullW,windowHeight:fullH,scrollX:0,scrollY:0,x:0,y:0})
-    .then(canvas=>{restore();canvas.toBlob(b=>{
-      const a=document.createElement('a');
-      a.href=URL.createObjectURL(b); a.download='wc2026-bracket.png'; a.click();
-      setTimeout(()=>URL.revokeObjectURL(a.href),3000);
-    },'image/png');})
-    .catch(()=>{restore();flash(btn,'⚠️ Export failed');});
+  const finish=(failed)=>{
+    el.style.overflow=prev.overflow;el.style.width=prev.width;el.style.maxWidth=prev.maxWidth;drawConnectors();
+    btn.disabled=false; btn.textContent=label; if(failed)flash(btn,'⚠️ Export failed');
+  };
+  // On file:// Chrome taints the canvas with local images, so skip them (flags are CORS-clean).
+  const localFile=location.protocol==='file:';
+  // let the "Saving…" label paint before the heavy synchronous clone starts
+  setTimeout(()=>{
+    html2canvas(el,{backgroundColor:bg,useCORS:true,scale:2,logging:false,imageTimeout:4000,
+      width:fullW,height:fullH,scrollX:0,scrollY:0,x:0,y:0,   // no windowWidth → don't re-layout the whole page
+      ignoreElements:e=>localFile && e.tagName==='IMG' && !/flagcdn\.com/.test(e.src||'')})
+      .then(canvas=>{
+        try{
+          canvas.toBlob(b=>{
+            if(!b){finish(true);return;}
+            const a=document.createElement('a');
+            a.href=URL.createObjectURL(b); a.download='wc2026-bracket.png'; a.click();
+            setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+            finish(false);
+          },'image/png');
+        }catch(err){finish(true);}
+      })
+      .catch(()=>finish(true));
+  },40);
 }
 
 function renderAll(){renderGroups();renderThird();renderBracket();}
