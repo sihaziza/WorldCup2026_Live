@@ -3,7 +3,7 @@
 A single-page tracker for the 2026 FIFA World Cup: live group standings and an
 auto-seeded knockout bracket you can fill in yourself.
 
-**Live site:** _add your GitHub Pages URL here_
+**Live site:** https://sihaziza.github.io/WorldCup2026_Live/
 
 ## What it does
 - **Live standings** — pulled from ESPN's free feed and refreshed every minute, including in-progress games (with scorers).
