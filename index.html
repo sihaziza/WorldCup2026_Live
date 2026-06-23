@@ -80,14 +80,15 @@
   .third{max-width:780px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
   .third tr.in td{background:rgba(57,217,138,.13)}
   .third tr.out td{opacity:.5}
-  .bracket{position:relative;display:flex;gap:46px;overflow-x:auto;padding:16px 6px 26px}
+  .bracket{position:relative;display:flex;gap:34px;height:680px;overflow-x:auto;padding:16px 6px 26px}
   svg.conn{position:absolute;left:0;top:0;pointer-events:none;z-index:0;overflow:visible}
   svg.conn path{fill:none;stroke:var(--conn);stroke-width:2}
   svg.conn path.d{stroke:var(--gold);stroke-dasharray:4 4;opacity:.55}
-  .round{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-around;min-width:175px;gap:12px}
+  .round{position:relative;z-index:1;display:flex;flex-direction:column;min-width:158px}
+  .ties{flex:1;display:flex;flex-direction:column;justify-content:space-around}
   .round h4{text-align:center;color:var(--muted);font-size:12px;text-transform:uppercase;margin:0 0 6px}
   .tie{background:var(--panel);border:1px solid var(--line);border-radius:9px;overflow:hidden;font-size:12px;cursor:pointer}
-  .tie .row{display:flex;justify-content:space-between;padding:7px 9px}
+  .tie .row{display:flex;justify-content:space-between;padding:5px 9px}
   .tie .row+.row{border-top:1px solid var(--line)}
   .tie .row.pick{cursor:pointer}
   .tie .row.pick:hover{background:rgba(77,163,255,.15)}
@@ -482,7 +483,7 @@ function tieHTML(t){
   return `<div class="tie" data-mtag="${t.tag}">${t.tag?`<div class="mtag">${t.tag}</div>`:''}${row(t.home)}${row(t.away)}</div>`;
 }
 function colHTML(title,ties){
-  return `<div class="round"><h4>${title}</h4>${ties.map(tieHTML).join('')}</div>`;
+  return `<div class="round"><h4>${title}</h4><div class="ties">${ties.map(tieHTML).join('')}</div></div>`;
 }
 function renderBracket(){
   const b=buildBracket();
