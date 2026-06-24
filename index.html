@@ -39,8 +39,10 @@
   .liverow{display:inline-flex;align-items:center;gap:6px}
   .livegame b{font-size:16px}
   .livemin{color:#ff5c5c;font-weight:700;font-size:11px}
-  .goals{display:flex;flex-direction:column;gap:1px;padding-left:2px}
+  .goals{display:flex;flex-direction:column;gap:1px;width:100%}
   .goal{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--muted)}
+  .goal.home{justify-content:flex-start}
+  .goal.away{justify-content:flex-end;text-align:right}
   .goal b{font-size:10.5px;color:var(--txt)}
   .goal .assist{opacity:.85;font-style:italic}
   img.flag.mini{height:10px;margin:0}
@@ -55,16 +57,17 @@
   .ko-controls button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);
      padding:6px 11px;border-radius:8px;cursor:pointer;font-size:12px;transition:.15s}
   .ko-controls button:hover{border-color:var(--accent)}
+  .ko-controls button:disabled{opacity:.4;cursor:not-allowed;border-color:var(--line)}
   h2.section{text-align:center;margin:30px 0 14px;font-size:20px;color:var(--onbg)}
-  .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(352px,1fr));gap:14px}
+  .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(368px,1fr));gap:14px}
   .group{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
   .group h3{margin:0;padding:10px 12px;background:var(--panel2);font-size:15px}
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{padding:6px 7px;text-align:center}
   th{color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--line)}
   td.team{text-align:left;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:135px}
-  img.flag{height:13px;width:auto;margin-right:6px;border-radius:2px;vertical-align:-2px;
-     box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+  img.flag{width:24px;height:16px;object-fit:contain;margin-right:7px;border-radius:2px;vertical-align:middle;
+     box-shadow:0 0 0 1px rgba(0,0,0,.12)}
   .tie .nm{display:flex;align-items:center;gap:0}
   .tie .nm img.flag{height:12px}
   tr.q1 td{background:rgba(57,217,138,.13)}
@@ -74,11 +77,11 @@
   .group input{width:22px;background:#ffffff;border:1px solid var(--line);color:var(--txt);
      border-radius:5px;padding:2px 0;text-align:center;font-size:11px}
   /* identical fixed layout for every group table so columns align across all 12 */
-  .group table{table-layout:fixed;width:336px;margin:0 auto}
+  .group table{table-layout:fixed;width:352px;margin:0 auto}
   .group th,.group td{padding:5px 2px}
   .group th{font-size:9px}
-  .group th:first-child,.group td:first-child{width:128px}        /* team (fits "United States") */
-  .group th:not(:first-child),.group td:not(:first-child){width:26px}
+  .group th:first-child,.group td:first-child{width:152px}        /* team (fits "United States (14)") */
+  .group th:not(:first-child),.group td:not(:first-child){width:25px}
   .group td.team{padding-left:6px}
   .group input[data-k="Pts"]{color:var(--accent);font-weight:800} /* points stand out */
   .group th.ptsh{color:var(--accent);font-weight:800}
@@ -90,7 +93,8 @@
   svg.conn path{fill:none;stroke:var(--conn);stroke-width:2}
   svg.conn path.d{stroke:var(--gold);stroke-dasharray:4 4;opacity:.55}
   .round{position:relative;z-index:1;display:flex;flex-direction:column;flex:none}
-  .round:not(.center){width:126px}   /* uniform game-box width across all rounds */
+  .round:not(.center){width:150px}   /* uniform game-box width across all rounds (fits name + FIFA rank) */
+  .rk{color:var(--muted);font-size:10px;font-weight:600;margin-left:3px}
   /* pure space-around (no gap) keeps every match centered exactly on its two feeders;
      the extra bracket height gives the R32 games their breathing room evenly */
   .ties{flex:1;display:flex;flex-direction:column;justify-content:space-around}
@@ -141,7 +145,7 @@
   <div class="ko-controls">
     <span class="hint">👆 Click a team to send it to the next round — click it again to undo · your picks save automatically</span>
     <button id="shareBtn">🔗 Share bracket</button>
-    <button id="pngBtn">📷 Save as PNG</button>
+    <button id="pngBtn">💾 Save bracket</button>
     <button id="topBtn">🧹 Clear bracket</button>
   </div>
   <div class="bracket" id="bracket"></div>
@@ -193,6 +197,33 @@ const CODES={
   "Congo DR":"cd","Portugal":"pt","Uzbekistan":"uz","England":"gb-eng","Ghana":"gh",
   "Panama":"pa","Croatia":"hr"
 };
+/* ---- FIFA world rankings: two dated snapshots kept on file ---- */
+/* Snapshot A — official 11 Jun 2026 (matches inside.fifa.com). Top 20 + 24–31 confirmed, rest estimated. */
+const RANKS_20260611={
+  "Argentina":1,"Spain":2,"France":3,"England":4,"Portugal":5,"Brazil":6,"Morocco":7,"Netherlands":8,
+  "Belgium":9,"Germany":10,"Croatia":11,"Colombia":13,"Mexico":14,"Senegal":15,"Uruguay":16,
+  "United States":17,"Japan":18,"Switzerland":19,"Iran":20,
+  "Austria":24,"South Korea":25,"Australia":27,"Algeria":28,"Egypt":29,"Canada":30,"Norway":31,
+  "Ivory Coast":33,"Sweden":38,"Paraguay":41,"Scotland":42,"Bosnia-Herz.":64,"Cape Verde":67,
+  "Ecuador":23,"Türkiye":34,"Qatar":35,"Czechia":39,"Panama":44,"Tunisia":45,"Uzbekistan":57,
+  "Saudi Arabia":58,"Iraq":59,"Congo DR":60,"South Africa":61,"Jordan":65,"Ghana":73,"Haiti":83,
+  "New Zealand":89,"Curaçao":90
+};
+/* Snapshot B — 20 Jul 2026 (football-ranking.com). Top 50 exact, below 50 estimated. */
+const RANKS_20260720={
+  "Argentina":1,"France":2,"Spain":3,"England":4,"Brazil":5,"Morocco":6,"Portugal":7,"Netherlands":8,
+  "Germany":9,"Belgium":10,"Colombia":11,"Mexico":12,"Croatia":13,"United States":14,"Japan":16,
+  "Switzerland":17,"Uruguay":18,"Senegal":19,"Iran":21,"Norway":22,"Austria":23,"South Korea":24,
+  "Australia":26,"Egypt":27,"Algeria":28,"Canada":29,"Ecuador":30,"Ivory Coast":31,"Türkiye":32,
+  "Sweden":36,"Paraguay":37,"Scotland":40,"Panama":42,"Czechia":43,"Congo DR":47,
+  /* below top 50 — estimates */
+  "Tunisia":52,"Qatar":53,"Uzbekistan":57,"Saudi Arabia":58,"Iraq":59,"South Africa":61,"Bosnia-Herz.":64,
+  "Jordan":65,"Cape Verde":67,"Ghana":73,"Haiti":83,"New Zealand":89,"Curaçao":90
+};
+/* Which snapshot the site displays (newest): */
+const RANKS=RANKS_20260720;
+function rankTag(name){const r=RANKS[clean(name)];return r?` <span class="rk">(${r})</span>`:'';}
+
 /* Primary flag colours per country (for the champion fireworks). */
 const FLAGCOLORS={
   "Mexico":["#006847","#ffffff","#ce1126"],"South Korea":["#cd2e3a","#0047a0","#ffffff"],
@@ -325,7 +356,7 @@ function renderTicker(){
   const miniFlag=cn=>{const c=CODES[cn];return c?`<img class="flag mini" src="https://flagcdn.com/h20/${c}.png" alt="">`:'';};
   el.innerHTML=liveGames.map(g=>{
     const goals=(g.goals||[]).map(gl=>
-      `<span class="goal"><b>${gl.clock}</b> ${gl.scorer}${gl.tag}`+
+      `<span class="goal ${gl.side==='a'?'home':'away'}"><b>${gl.clock}</b> ${gl.scorer}${gl.tag}`+
       (gl.assist?` <span class="assist">↳ ${gl.assist}</span>`:'')+`</span>`
     ).join('');
     return `<div class="livegame">
@@ -356,7 +387,7 @@ function renderGroups(){
       const stat=(k)=>`<td><input data-g="${g}" data-i="${t.idx}" data-k="${k}" value="${t[k]}"></td>`;
       const oc=liveOutcome[clean(t.name)];
       const live=oc?`<span class="livedot ${oc}" title="live: ${oc==='win'?'winning':oc==='loss'?'losing':'drawing'}"></span>`:'';
-      return `<tr class="${cls}"><td class="team">${live}${flagged(t.name)}</td>
+      return `<tr class="${cls}"><td class="team">${live}${flagged(t.name)}${rankTag(t.name)}</td>
         ${stat('P')}${stat('Pts')}${stat('W')}${stat('D')}${stat('L')}${stat('GF')}${stat('GA')}
         <td>${t.GD>0?'+':''}${t.GD}</td></tr>`;
     }).join('');
@@ -481,7 +512,7 @@ function buildBracket(){
 function tieHTML(t){
   const w=winnerOf(t);
   const row=(team)=> team
-    ? `<div class="row pick ${team===w?'adv':(w?'lost':'')}" data-tag="${t.tag}" data-team="${encodeURIComponent(team)}"><span class="nm">${flagged(team)}</span></div>`
+    ? `<div class="row pick ${team===w?'adv':(w?'lost':'')}" data-tag="${t.tag}" data-team="${encodeURIComponent(team)}"><span class="nm">${flagged(team)}${rankTag(team)}</span></div>`
     : `<div class="row tbd"><span class="nm">— TBD —</span></div>`;
   return `<div class="tie" data-mtag="${t.tag}">${t.tag?`<div class="mtag">${t.tag}</div>`:''}${row(t.home)}${row(t.away)}</div>`;
 }
@@ -515,9 +546,17 @@ function renderBracket(){
   }));
   requestAnimationFrame(drawConnectors);
   setTimeout(drawConnectors,250); // redraw once flag images settle
+  // enable Share/Save only when the bracket is fully decided (champion + 3rd place)
+  const complete=!!b.champion && !!winnerOf(b.third);
+  [document.getElementById('shareBtn'),document.getElementById('pngBtn')].forEach(btn=>{
+    if(!btn)return;
+    btn.disabled=!complete;
+    btn.title=complete?'':'Pick winners all the way through the Final and the 3rd-place game first';
+  });
   if(b.champion && b.champion!==lastChampion) launchFireworks(champColors(b.champion));
   lastChampion=b.champion||'';
 }
+function bracketComplete(){const b=buildBracket();return !!b.champion && !!winnerOf(b.third);}
 
 /* ---------- Champion fireworks ---------- */
 let lastChampion='';
@@ -612,6 +651,7 @@ function loadSharedFromURL(){
 }
 function flash(btn,txt){const o=btn.textContent;btn.textContent=txt;setTimeout(()=>btn.textContent=o,1800);}
 function shareBracket(){
+  if(!bracketComplete()){flash(document.getElementById('shareBtn'),'⚠️ Finish the bracket first');return;}
   const code=encodeBracket();
   const url=location.origin+location.pathname+(code?'#b='+code:'');
   const btn=document.getElementById('shareBtn');
@@ -623,6 +663,7 @@ function shareBracket(){
 /* ---------- Export the full bracket as a PNG ---------- */
 function exportPng(){
   const btn=document.getElementById('pngBtn');
+  if(!bracketComplete()){flash(btn,'⚠️ Finish the bracket first');return;}
   if(typeof html2canvas!=='function'){flash(btn,'⚠️ Loading… retry');return;}
   const el=document.getElementById('bracket');
   const label=btn.textContent; btn.textContent='📷 Saving…'; btn.disabled=true;
