@@ -454,12 +454,31 @@ const R16TAGS=['M89','M90','M93','M94','M91','M92','M95','M96'];
 const QFTAGS=['M97','M98','M99','M100'];
 const SFTAGS=['M101','M102'];
 
-/* FIFA Annex C: each "vs 3rd" match hosts a third-placed team from a FIXED set of eligible groups.
-   Given which 8 groups qualify a third, the assignment is the unique slot↔group matching. */
+/* FIFA Annex C: each "vs 3rd" match hosts a third-placed team from a FIXED set of eligible groups. */
 const THIRD_ALLOW={M74:'ABCDF',M77:'CDFGH',M79:'CEFHI',M80:'EHIJK',M81:'BEFIJ',M82:'AEHIJ',M85:'EFGIJ',M87:'DEIJL'};
+
+/* Official FIFA Annex C lookup. Key = the 8 advancing third-place groups (sorted).
+   Value = the third-place group assigned to each host winner, in order A,B,D,E,G,I,K,L
+   (i.e. matches M79,M85,M81,M74,M82,M77,M87,M80). Covers the currently-possible combinations. */
+const HOST_ORDER=['A','B','D','E','G','I','K','L'];
+const HOST_TAG={A:'M79',B:'M85',D:'M81',E:'M74',G:'M82',I:'M77',K:'M87',L:'M80'};
+const ANNEX_C={
+  "BEFGHJKL":"EJBFHGLK","BDEFIJKL":"EJBDIFLK","BDEFHJKL":"EJBDHFLK","BDEFHIKL":"EIBDHFLK",
+  "BDEFHIJL":"EJBDHFLI","BDEFHIJK":"EJBDHFIK","BDEFGJKL":"EGBDJFLK","BDEFGIKL":"EGBDIFLK",
+  "BDEFGIJL":"EGBDJFLI","BDEFGIJK":"EGBDJFIK","BDEFGHKL":"EGBDHFLK","BDEFGHJL":"HGBDJFLE",
+  "BDEFGHJK":"HGBDJFEK","BDEFGHIL":"EGBDHFLI","BDEFGHIK":"EGBDHFIK","BDEFGHIJ":"HGBDJFEI",
+  "ABDEFIKL":"EIBDAFLK","ABDEFIJL":"EJBDAFLI","ABDEFIJK":"EJBDAFIK","ABDEFHIL":"HEBDAFLI",
+  "ABDEFHIK":"HEBDAFIK","ABDEFHIJ":"HJBDAFEI","ABDEFGIL":"EGBDAFLI","ABDEFGIK":"EGBDAFIK",
+  "ABDEFGIJ":"EGBDAFIJ","ABDEFGHI":"HGBDAFEI","ABCDEFIL":"CEBDAFLI","ABCDEFIK":"CEBDAFIK",
+  "ABCDEFIJ":"CJBDAFEI","ABCDEFHI":"HEBCAFDI","ABCDEFGI":"CGBDAFEI"
+};
 /* Returns {matchTag: groupLetter} assigning the 8 qualifying thirds to their official slots. */
 function assignThirds(){
   const groups=thirdRanking().slice(0,8).map(t=>t.group);
+  // 1) official Annex C lookup
+  const row=ANNEX_C[groups.slice().sort().join('')];
+  if(row){const a={};HOST_ORDER.forEach((h,i)=>a[HOST_TAG[h]]=row[i]);return a;}
+  // 2) fallback: eligibility-set matching (legal, but not guaranteed to match Annex C)
   const slots=Object.keys(THIRD_ALLOW);
   // solve most-constrained slot first for speed/determinism
   const ordered=[...slots].sort((a,b)=>
