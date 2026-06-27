@@ -113,7 +113,7 @@
   summary.foldable .caret{display:inline-block;transition:transform .15s;font-size:15px}
   details[open] summary.foldable .caret{transform:rotate(180deg)}
   .tie .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .tie .mtag{font-size:10px;color:var(--muted);padding:3px 9px;background:var(--panel2)}
+  .tie .mtag{font-size:9.5px;color:var(--muted);padding:3px 4px;background:var(--panel2);text-align:center}
   .round.center{justify-content:center;min-width:130px}
   .apex{text-align:center;color:var(--gold);font-size:12px;font-weight:700;line-height:1.5;
      background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:14px 10px}
@@ -143,7 +143,7 @@
   <div id="ticker" class="ticker" style="display:none"></div>
 
   <div class="ko-controls">
-    <span class="hint">👆 Click a team to send it to the next round — click it again to undo · your picks save automatically</span>
+    <span class="hint">👆 Click a team to send it to the next round — click it again to undo · your picks save automatically · kick-off times in Pacific (PT)</span>
     <button id="shareBtn">🔗 Share bracket</button>
     <button id="pngBtn">💾 Save bracket</button>
     <button id="topBtn">🧹 Clear bracket</button>
@@ -528,12 +528,24 @@ function buildBracket(){
   const third={home:loserOf(sf[0]),away:loserOf(sf[1]),tag:'M103'};
   return {r32,r16,qf,sf,final,third,champion:winnerOf(final)};
 }
+/* Kick-off date & time in Pacific (PT = UTC−7 in July) for each knockout match. */
+const SCHEDULE={
+  M73:"Jun 28 · 12:00 PM",M74:"Jun 29 · 1:30 PM",M75:"Jun 29 · 6:00 PM",M76:"Jun 29 · 10:00 AM",
+  M77:"Jun 30 · 2:00 PM",M78:"Jun 30 · 10:00 AM",M79:"Jun 30 · 6:00 PM",M80:"Jul 1 · 9:00 AM",
+  M81:"Jul 1 · 5:00 PM",M82:"Jul 1 · 1:00 PM",M83:"Jul 2 · 4:00 PM",M84:"Jul 2 · 12:00 PM",
+  M85:"Jul 2 · 8:00 PM",M86:"Jul 3 · 3:00 PM",M87:"Jul 3 · 6:30 PM",M88:"Jul 3 · 11:00 AM",
+  M89:"Jul 4 · 2:00 PM",M90:"Jul 4 · 10:00 AM",M91:"Jul 5 · 1:00 PM",M92:"Jul 5 · 5:00 PM",
+  M93:"Jul 6 · 12:00 PM",M94:"Jul 6 · 5:00 PM",M95:"Jul 7 · 9:00 AM",M96:"Jul 7 · 1:00 PM",
+  M97:"Jul 9 · 1:00 PM",M98:"Jul 10 · 12:00 PM",M99:"Jul 11 · 2:00 PM",M100:"Jul 11 · 6:00 PM",
+  M101:"Jul 14 · 12:00 PM",M102:"Jul 15 · 12:00 PM",M103:"Jul 18 · 2:00 PM",M104:"Jul 19 · 12:00 PM"
+};
 function tieHTML(t){
   const w=winnerOf(t);
   const row=(team)=> team
     ? `<div class="row pick ${team===w?'adv':(w?'lost':'')}" data-tag="${t.tag}" data-team="${encodeURIComponent(team)}"><span class="nm">${flagged(team)}${rankTag(team)}</span></div>`
     : `<div class="row tbd"><span class="nm">— TBD —</span></div>`;
-  return `<div class="tie" data-mtag="${t.tag}">${t.tag?`<div class="mtag">${t.tag}</div>`:''}${row(t.home)}${row(t.away)}</div>`;
+  const tag=t.tag?`<div class="mtag">${SCHEDULE[t.tag]||t.tag}</div>`:'';
+  return `<div class="tie" data-mtag="${t.tag}">${tag}${row(t.home)}${row(t.away)}</div>`;
 }
 function colHTML(title,ties){
   return `<div class="round"><h4>${title}</h4><div class="ties">${ties.map(tieHTML).join('')}</div></div>`;
