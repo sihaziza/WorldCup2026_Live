@@ -298,20 +298,28 @@ async function fetchLive(){
                 clock:d.clock&&d.clock.displayValue||'',
                 tag:goalTag(d.type&&d.type.text)};
       });
+      const slug=(ev.season&&ev.season.slug)||'';
+      // R32 onward is knockout. ESPN tags the round via season.slug (e.g. "round-of-32",
+      // "round-of-16", "quarterfinals", "semifinals", "third-place", "final").
+      const knockout=/round-of|quarter|semi|final|third|knockout|playoff/i.test(slug);
       return {a:fix(A.team.displayName),sa:parseInt(A.score)||0,
               b:fix(B.team.displayName),sb:parseInt(B.score)||0,
-              detail:ev.status.type.shortDetail, goals};
+              detail:ev.status.type.shortDetail, goals, knockout};
     });
   }catch(e){return [];}
 }
 /* provisionally fold a live result into the standings table `next` */
 function applyLive(next,g){
-  const find=cn=>{for(const L in next){const r=next[L].find(t=>clean(t[0])===cn);if(r)return r;}return null;};
-  const A=find(g.a),B=find(g.b); if(!A||!B)return;
-  A[1]++;B[1]++; A[5]+=g.sa;A[6]+=g.sb; B[5]+=g.sb;B[6]+=g.sa;
-  if(g.sa>g.sb){A[2]++;A[7]+=3;B[4]++;}
-  else if(g.sa<g.sb){B[2]++;B[7]+=3;A[4]++;}
-  else {A[3]++;B[3]++;A[7]++;B[7]++;}
+  const find=cn=>{for(const L in next){const r=next[L].find(t=>clean(t[0])===cn);if(r)return {r,L};}return null;};
+  const A=find(g.a),B=find(g.b);
+  // Both teams must sit in the SAME group. Group games always do; knockout games never
+  // do — so this is a hard guard against a knockout result corrupting the group tables.
+  if(!A||!B||A.L!==B.L)return;
+  const a=A.r,b=B.r;
+  a[1]++;b[1]++; a[5]+=g.sa;a[6]+=g.sb; b[5]+=g.sb;b[6]+=g.sa;
+  if(g.sa>g.sb){a[2]++;a[7]+=3;b[4]++;}
+  else if(g.sa<g.sb){b[2]++;b[7]+=3;a[4]++;}
+  else {a[3]++;b[3]++;a[7]++;b[7]++;}
   liveTeams.add(g.a);liveTeams.add(g.b);
 }
 async function fetchStandings(){
@@ -337,11 +345,15 @@ async function fetchStandings(){
       liveOutcome[g.a]=g.sa>g.sb?'win':g.sa<g.sb?'loss':'draw';
       liveOutcome[g.b]=g.sb>g.sa?'win':g.sb<g.sa?'loss':'draw';
     });
-    games.forEach(g=>applyLive(next,g));
+    // Only group-stage games belong in the standings; knockout games (R32 onward) must
+    // NOT be folded in, or they corrupt the group tables and the third-place seeding.
+    const groupGames=games.filter(g=>!g.knockout);
+    groupGames.forEach(g=>applyLive(next,g));
     data=next; renderAll(); renderTicker();
     if(st){st.className='status ok';
       st.textContent='🟢 Live from ESPN · updated '+new Date().toLocaleTimeString()
-        +(games.length?` · ${games.length} game${games.length>1?'s':''} in progress (provisional)`:'');}
+        +(games.length?` · ${games.length} game${games.length>1?'s':''} in progress`
+          +(groupGames.length?' (standings provisional)':''):'');}
     return true;
   }catch(e){
     if(st){st.className='status warn';st.textContent='🟡 Showing built-in snapshot — live ESPN feed unavailable right now';}
