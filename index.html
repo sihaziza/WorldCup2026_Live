@@ -209,19 +209,19 @@ const RANKS_20260611={
   "Saudi Arabia":58,"Iraq":59,"Congo DR":60,"South Africa":61,"Jordan":65,"Ghana":73,"Haiti":83,
   "New Zealand":89,"Curaçao":90
 };
-/* Snapshot B — 20 Jul 2026 (football-ranking.com). Top 50 exact, below 50 estimated. */
-const RANKS_20260720={
-  "Argentina":1,"France":2,"Spain":3,"England":4,"Brazil":5,"Morocco":6,"Portugal":7,"Netherlands":8,
-  "Germany":9,"Belgium":10,"Colombia":11,"Mexico":12,"Croatia":13,"United States":14,"Japan":16,
-  "Switzerland":17,"Uruguay":18,"Senegal":19,"Iran":21,"Norway":22,"Austria":23,"South Korea":24,
-  "Australia":26,"Egypt":27,"Algeria":28,"Canada":29,"Ecuador":30,"Ivory Coast":31,"Türkiye":32,
-  "Sweden":36,"Paraguay":37,"Scotland":40,"Panama":42,"Czechia":43,"Congo DR":47,
-  /* below top 50 — estimates */
-  "Tunisia":52,"Qatar":53,"Uzbekistan":57,"Saudi Arabia":58,"Iraq":59,"South Africa":61,"Bosnia-Herz.":64,
-  "Jordan":65,"Cape Verde":67,"Ghana":73,"Haiti":83,"New Zealand":89,"Curaçao":90
+/* Snapshot B — 2 Jul 2026 (pulled from football-ranking.com/fifa-world-rankings). All 48 values
+   exact, read straight off the published top-100 list. */
+const RANKS_20260702={
+  "France":1,"Argentina":2,"Spain":3,"England":4,"Brazil":5,"Morocco":6,"Netherlands":7,"Portugal":8,
+  "Belgium":9,"Mexico":10,"Colombia":11,"Croatia":12,"Germany":13,"United States":15,"Switzerland":16,
+  "Japan":17,"Uruguay":18,"Senegal":19,"Norway":21,"Iran":22,"Austria":23,"Egypt":25,"Türkiye":26,
+  "Australia":27,"Algeria":28,"Ecuador":29,"Canada":30,"South Korea":31,"Paraguay":33,"Ivory Coast":34,
+  "Sweden":38,"Scotland":41,"Congo DR":42,"Panama":44,"Czechia":48,
+  "South Africa":56,"Tunisia":57,"Saudi Arabia":58,"Qatar":59,"Uzbekistan":60,"Iraq":62,"Cape Verde":63,
+  "Bosnia-Herz.":64,"Ghana":65,"Jordan":73,"Curaçao":82,"New Zealand":86,"Haiti":88
 };
 /* Which snapshot the site displays (newest): */
-const RANKS=RANKS_20260720;
+const RANKS=RANKS_20260702;
 function rankTag(name){const r=RANKS[clean(name)];return r?` <span class="rk">(${r})</span>`:'';}
 
 /* Primary flag colours per country (for the champion fireworks). */
